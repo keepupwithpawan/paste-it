@@ -19,84 +19,102 @@ chrome.action.onClicked.addListener(() => {
 
 function createPopupWindow() {
   chrome.windows.getCurrent((currentWindow) => {
-    const width = 350;
-    const height = 500;
+    const width = 900; 
+    const height = 1500;
 
-    // Get display info asynchronously
     chrome.system.display.getInfo((displays) => {
-      // Use the primary display (index 0) or adjust for multi-monitor if needed
       const primaryDisplay = displays[0];
       const screenWidth = primaryDisplay.workArea.width;
       const screenHeight = primaryDisplay.workArea.height;
       const screenLeft = primaryDisplay.workArea.left;
       const screenTop = primaryDisplay.workArea.top;
 
-      // Calculate initial position based on current window
+      // Calculate top-right position
       let left = (currentWindow.width - width) + currentWindow.left;
       let top = currentWindow.top;
 
-      // Adjust bounds to ensure 50% of the window is visible
+      // Ensure 50% visibility
       const minVisibleWidth = width * 0.5;
       const minVisibleHeight = height * 0.5;
-
-      // Ensure left keeps at least 50% of width on screen
       if (left + minVisibleWidth > screenLeft + screenWidth) {
-        left = screenLeft + screenWidth - width; // Align to right edge
+        left = screenLeft + screenWidth - width;
       }
-      if (left < screenLeft) left = screenLeft; // Prevent off-screen left
-
-      // Ensure top keeps at least 50% of height on screen
+      if (left < screenLeft) left = screenLeft;
       if (top + minVisibleHeight > screenTop + screenHeight) {
-        top = screenTop + screenHeight - height; // Align to bottom edge
+        top = screenTop + screenHeight - height;
       }
-      if (top < screenTop) top = screenTop; // Prevent off-screen top
+      if (top < screenTop) top = screenTop;
 
       chrome.windows.create({
         url: chrome.runtime.getURL('popup.html'),
-        type: 'popup',
+        // Remove type: 'popup' to test Arc's default behavior
         width: width,
         height: height,
         top: Math.round(top),
         left: Math.round(left),
-        focused: true
+        focused: true,
+        state: 'normal'
       }, (window) => {
         if (chrome.runtime.lastError) {
           console.error('Window creation failed:', chrome.runtime.lastError.message);
-          // Fallback: Center the window on the primary display
           chrome.windows.create({
             url: chrome.runtime.getURL('popup.html'),
-            type: 'popup',
             width: width,
             height: height,
             left: Math.round(screenLeft + (screenWidth - width) / 2),
             top: Math.round(screenTop + (screenHeight - height) / 2),
-            focused: true
+            focused: true,
+            state: 'normal'
           }, (fallbackWindow) => {
             popupWindow = fallbackWindow;
-            if (fallbackWindow) setupFocusInterval();
+            if (fallbackWindow) enforceWindowProperties(fallbackWindow.id);
           });
         } else {
           popupWindow = window;
-          setupFocusInterval();
+          enforceWindowProperties(window.id);
         }
       });
     });
   });
 }
 
-function setupFocusInterval() {
+function enforceWindowProperties(windowId) {
+  // Immediately enforce size and position
+  chrome.windows.update(windowId, {
+    width: 900,
+    height: 1500,
+    top: Math.round(popupWindow.top || 0), // Use initial top if available
+    left: Math.round(popupWindow.left || 0),
+    focused: true,
+    state: 'normal'
+  });
+
   clearFocusInterval();
   focusIntervalId = setInterval(() => {
     if (popupWindow) {
       chrome.windows.get(popupWindow.id, {}, (window) => {
-        if (!chrome.runtime.lastError && !window.focused) {
-          chrome.windows.update(popupWindow.id, { focused: true });
+        if (chrome.runtime.lastError) {
+          clearFocusInterval();
+          popupWindow = null;
+        } else {
+          console.log('Window state:', window); // Debug log
+          if (!window.focused || window.state !== 'normal' || window.width > 400 || window.height > 550) {
+            chrome.windows.update(popupWindow.id, {
+              width: 900,
+              height: 1500,
+              top: Math.round(window.top),
+              left: Math.round(window.left),
+              focused: true,
+              state: 'normal',
+              drawAttention: true // Flash to regain attention
+            });
+          }
         }
       });
     } else {
       clearFocusInterval();
     }
-  }, 3000);
+  }, 2000); // Check every 0.5 seconds
 }
 
 function clearFocusInterval() {

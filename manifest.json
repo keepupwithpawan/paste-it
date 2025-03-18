@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Paste It",
-    "version": "2.0",
+    "version": "3.0",
     "description": "A sticky note extension that stays on top. Paste images, write notes, create to-do lists on the go.",
     "permissions": [
       "storage",
@@ -15,7 +15,8 @@
         "48": "icons/icon.png",
         "128": "icons/icon.png"
       },
-      "default_title": "Toggle Notes"
+      "default_title": "Toggle Notes",
+      "default_popup": "popup.html"
     },
     "background": {
       "service_worker": "background.js"
