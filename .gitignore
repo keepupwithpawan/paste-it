@@ -1,0 +1,6 @@
+# Ignore build artifacts and temporary files
+*.zip
+*.log
+node_modules/
+dist/
+*.DS_Store

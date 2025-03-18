@@ -1,0 +1,208 @@
+/* Base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
+  }
+  
+  body {
+    width: 100%;
+    min-height: 100vh;
+    padding: 12px;
+    transition: background-color 0.3s ease;
+    overflow-x: hidden;
+  }
+  
+  /* Light mode (default) */
+  body.light {
+    background-color: #f5f5f7;
+  }
+  
+  /* Dark mode */
+  body.dark {
+    background-color: #1c1c1e;
+  }
+  
+  /* Header styles */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .title {
+    font-size: 16px;
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+  
+  body.light .title {
+    color: #000000;
+  }
+  
+  body.dark .title {
+    color: #ffffff;
+  }
+  
+  /* Action buttons */
+  .button-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .btn {
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+  }
+  
+  body.light .btn {
+    color: #666666;
+  }
+  
+  body.dark .btn {
+    color: #999999;
+  }
+  
+  .btn:hover {
+    transform: scale(1.1);
+  }
+  
+  body.light .btn:hover {
+    color: #000000;
+  }
+  
+  body.dark .btn:hover {
+    color: #ffffff;
+  }
+  
+  /* Mode toggle button */
+  #modeToggle {
+    font-size: 16px;
+  }
+  
+  /* Notes container */
+  .notes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  /* Note styles */
+  .note {
+    background-color: white;
+    border-radius: 12px;
+    padding: 10px;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  
+  body.dark .note {
+    background-color: #2c2c2e;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  
+  .note-content {
+    min-height: max-content;
+    font-size: 14px;
+    outline: none;
+    word-wrap: break-word;
+    transition: color 0.3s ease;
+  }
+  
+  body.light .note-content {
+    color: #000000;
+  }
+  
+  body.dark .note-content {
+    color: #ffffff;
+  }
+  
+  .note-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 8px 0;
+    border-radius: 6px;
+  }
+  
+  /* Drag over effects */
+  .drag-over {
+    border: 2px dashed #007aff;
+    padding: 8px;
+  }
+  
+  /* To-do item styles */
+  .todo-list {
+    list-style-type: none;
+  }
+  
+  .todo-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  
+  .todo-checkbox {
+    margin-right: 8px;
+    cursor: pointer;
+    accent-color: #007aff;
+  }
+  
+  .todo-label {
+    flex-grow: 1;
+    font-size: 14px;
+    outline: none;
+    transition: color 0.3s ease;
+  }
+  
+  body.light .todo-label {
+    color: #000000;
+  }
+  
+  body.dark .todo-label {
+    color: #ffffff;
+  }
+  
+  .todo-checked {
+    text-decoration: line-through;
+    color: #888888;
+  }
+  
+  body.dark .todo-checked {
+    color: #666666;
+  }
+  
+  /* "Delete" button for notes */
+  .delete-note {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  
+  body.light .delete-note {
+    color: #ff3b30;
+  }
+  
+  body.dark .delete-note {
+    color: #ff453a;
+  }
+  
+  .note:hover .delete-note {
+    opacity: 1;
+  }
