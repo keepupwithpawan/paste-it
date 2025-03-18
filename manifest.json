@@ -15,8 +15,7 @@
         "48": "icons/icon.png",
         "128": "icons/icon.png"
       },
-      "default_title": "Toggle Notes",
-      "default_popup": "popup.html"
+      "default_title": "Toggle Notes"
     },
     "background": {
       "service_worker": "background.js"
