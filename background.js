@@ -1,84 +1,104 @@
 let popupWindow = null;
 let focusIntervalId = null;
 
-// Listen for clicks on the extension icon
 chrome.action.onClicked.addListener(() => {
   if (popupWindow) {
-    // Check if the window still exists
     chrome.windows.get(popupWindow.id, {}, (window) => {
       if (chrome.runtime.lastError) {
-        // Window doesn't exist anymore, create a new one
         createPopupWindow();
       } else {
-        // Window exists, toggle it (close it)
         chrome.windows.remove(popupWindow.id);
         popupWindow = null;
         clearFocusInterval();
       }
     });
   } else {
-    // No window exists, create one
     createPopupWindow();
   }
 });
 
-// Function to create the popup window
 function createPopupWindow() {
-  // Get the current window first to determine positioning
   chrome.windows.getCurrent((currentWindow) => {
-    // Get display information
     const width = 350;
     const height = 500;
-    
-    // Calculate position (top-right corner of the current window)
-    let left = (currentWindow.width - width) + currentWindow.left;
-    let top = currentWindow.top;
-    
-    // Ensure window is within visible area
-    if (left < 0) left = 0;
-    if (top < 0) top = 0;
-    
-    // Create a new popup window
-    chrome.windows.create({
-      url: chrome.runtime.getURL('popup.html'),
-      type: 'popup',
-      width: width,
-      height: height,
-      top: top,
-      left: left,
-      focused: true
-    }, (window) => {
-      popupWindow = window;
-      
-      // Create a focus interval to keep the window on top
-      setupFocusInterval();
+
+    // Get display info asynchronously
+    chrome.system.display.getInfo((displays) => {
+      // Use the primary display (index 0) or adjust for multi-monitor if needed
+      const primaryDisplay = displays[0];
+      const screenWidth = primaryDisplay.workArea.width;
+      const screenHeight = primaryDisplay.workArea.height;
+      const screenLeft = primaryDisplay.workArea.left;
+      const screenTop = primaryDisplay.workArea.top;
+
+      // Calculate initial position based on current window
+      let left = (currentWindow.width - width) + currentWindow.left;
+      let top = currentWindow.top;
+
+      // Adjust bounds to ensure 50% of the window is visible
+      const minVisibleWidth = width * 0.5;
+      const minVisibleHeight = height * 0.5;
+
+      // Ensure left keeps at least 50% of width on screen
+      if (left + minVisibleWidth > screenLeft + screenWidth) {
+        left = screenLeft + screenWidth - width; // Align to right edge
+      }
+      if (left < screenLeft) left = screenLeft; // Prevent off-screen left
+
+      // Ensure top keeps at least 50% of height on screen
+      if (top + minVisibleHeight > screenTop + screenHeight) {
+        top = screenTop + screenHeight - height; // Align to bottom edge
+      }
+      if (top < screenTop) top = screenTop; // Prevent off-screen top
+
+      chrome.windows.create({
+        url: chrome.runtime.getURL('popup.html'),
+        type: 'popup',
+        width: width,
+        height: height,
+        top: Math.round(top),
+        left: Math.round(left),
+        focused: true
+      }, (window) => {
+        if (chrome.runtime.lastError) {
+          console.error('Window creation failed:', chrome.runtime.lastError.message);
+          // Fallback: Center the window on the primary display
+          chrome.windows.create({
+            url: chrome.runtime.getURL('popup.html'),
+            type: 'popup',
+            width: width,
+            height: height,
+            left: Math.round(screenLeft + (screenWidth - width) / 2),
+            top: Math.round(screenTop + (screenHeight - height) / 2),
+            focused: true
+          }, (fallbackWindow) => {
+            popupWindow = fallbackWindow;
+            if (fallbackWindow) setupFocusInterval();
+          });
+        } else {
+          popupWindow = window;
+          setupFocusInterval();
+        }
+      });
     });
   });
 }
 
-// Function to set up the focus interval
 function setupFocusInterval() {
-  // Clear any existing intervals
   clearFocusInterval();
-  
-  // Set up a new interval to check and bring the window to front
-  // This interval is less frequent to be less intrusive
   focusIntervalId = setInterval(() => {
     if (popupWindow) {
-      // Check if the window is focused
       chrome.windows.get(popupWindow.id, {}, (window) => {
         if (!chrome.runtime.lastError && !window.focused) {
-          // Only focus if the window isn't already focused
           chrome.windows.update(popupWindow.id, { focused: true });
         }
       });
     } else {
       clearFocusInterval();
     }
-  }, 0); // Check every 3 seconds - balance between staying on top and being intrusive
+  }, 3000);
 }
 
-// Function to clear the focus interval
 function clearFocusInterval() {
   if (focusIntervalId) {
     clearInterval(focusIntervalId);
@@ -86,7 +106,6 @@ function clearFocusInterval() {
   }
 }
 
-// Listen for popup window being closed
 chrome.windows.onRemoved.addListener((windowId) => {
   if (popupWindow && popupWindow.id === windowId) {
     popupWindow = null;
@@ -94,7 +113,6 @@ chrome.windows.onRemoved.addListener((windowId) => {
   }
 });
 
-// Listen for when the browser is shutting down
 chrome.runtime.onSuspend.addListener(() => {
   clearFocusInterval();
 });
