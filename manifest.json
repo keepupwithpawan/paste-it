@@ -1,5 +1,5 @@
 {
-    "manifest_version": 3,
+    "manifest_version": 2,
     "name": "Paste It",
     "version": "3.0",
     "description": "A sticky note extension that stays on top. Paste images, write notes, create to-do lists on the go.",
